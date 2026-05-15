@@ -1,0 +1,512 @@
+"use client";
+
+import React from "react";
+import { Settings2, AlignLeft, AlignCenter, AlignRight } from "lucide-react";
+import { BuilderElement } from "@/types";
+import { cn } from "@/lib/utils";
+import {
+  HEADING_TAGS,
+  FONT_WEIGHTS,
+  FONT_FAMILIES,
+  FONT_STYLES,
+  TEXT_DECORATIONS,
+} from "@/constants";
+
+interface PropertyPanelProps {
+  selectedElement: BuilderElement | null;
+  updateElement: (id: string, updates: Partial<BuilderElement>) => void;
+}
+
+export const PropertyPanel = ({
+  selectedElement,
+  updateElement,
+}: PropertyPanelProps) => {
+  if (!selectedElement) {
+    return (
+      <div className="w-72 bg-slate-900/50 backdrop-blur-xl border-l border-slate-800 p-6 flex flex-col items-center justify-center text-slate-500 shrink-0">
+        <Settings2 className="w-8 h-8 mb-4 opacity-20" />
+        <p className="text-sm text-center">
+          Select an element to edit its properties
+        </p>
+      </div>
+    );
+  }
+
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
+  ) => {
+    const { name, value } = e.target;
+    updateElement(selectedElement.id, {
+      style: { ...selectedElement.style, [name]: value },
+    });
+  };
+
+  const handleStyleChange = (property: string, value: string) => {
+    updateElement(selectedElement.id, {
+      style: { ...selectedElement.style, [property]: value },
+    });
+  };
+
+  return (
+    <div className="w-72 bg-slate-900/50 backdrop-blur-xl border-l border-slate-800 p-6 flex flex-col gap-6 overflow-y-auto shrink-0">
+      <div className="flex items-center gap-2">
+        <Settings2 className="w-5 h-5 text-violet-400" />
+        <h2 className="text-lg font-semibold text-slate-100">Properties</h2>
+      </div>
+
+      <div className="space-y-4">
+        {["text", "heading"].includes(selectedElement.type) && (
+          <div className="space-y-4 border-b border-slate-800 pb-4">
+            {selectedElement.type === "heading" && (
+              <div className="space-y-2">
+                <label className="text-xs font-medium text-slate-400 tracking-wider">
+                  HTML Tag
+                </label>
+                <select
+                  value={selectedElement.content?.tag || "h1"}
+                  onChange={(e) => {
+                    const newTag = e.target.value;
+                    const tagConfig = HEADING_TAGS.find(
+                      (t) => t.value === newTag,
+                    );
+
+                    updateElement(selectedElement.id, {
+                      content: { ...selectedElement.content, tag: newTag },
+                      style: tagConfig
+                        ? {
+                            ...selectedElement.style,
+                            fontSize: `${tagConfig.defaultSize}px`,
+                          }
+                        : selectedElement.style,
+                    });
+                  }}
+                  className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-violet-500 transition-colors"
+                >
+                  {HEADING_TAGS.map((tag) => (
+                    <option key={tag.value} value={tag.value}>
+                      {tag.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <label className="text-xs font-medium text-slate-400 tracking-wider">
+                  Weight
+                </label>
+                <select
+                  value={selectedElement.style.fontWeight || "normal"}
+                  onChange={(e) =>
+                    handleStyleChange("fontWeight", e.target.value)
+                  }
+                  className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-violet-500 transition-colors"
+                >
+                  {FONT_WEIGHTS.map((weight) => (
+                    <option key={weight.value} value={weight.value}>
+                      {weight.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="space-y-2">
+                <label className="text-xs font-medium text-slate-400 tracking-wider">
+                  Family
+                </label>
+                <select
+                  value={selectedElement.style.fontFamily || "sans-serif"}
+                  onChange={(e) =>
+                    handleStyleChange("fontFamily", e.target.value)
+                  }
+                  className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-violet-500 transition-colors"
+                >
+                  {FONT_FAMILIES.map((family) => (
+                    <option key={family.value} value={family.value}>
+                      {family.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <label className="text-xs font-medium text-slate-400 tracking-wider">
+                  Style
+                </label>
+                <select
+                  value={selectedElement.style.fontStyle || "normal"}
+                  onChange={(e) =>
+                    handleStyleChange("fontStyle", e.target.value)
+                  }
+                  className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-violet-500 transition-colors"
+                >
+                  {FONT_STYLES.map((style) => (
+                    <option key={style.value} value={style.value}>
+                      {style.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="space-y-2">
+                <label className="text-xs font-medium text-slate-400 tracking-wider">
+                  Decoration
+                </label>
+                <select
+                  value={selectedElement.style.textDecoration || "none"}
+                  onChange={(e) =>
+                    handleStyleChange("textDecoration", e.target.value)
+                  }
+                  className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-violet-500 transition-colors"
+                >
+                  {TEXT_DECORATIONS.map((dec) => (
+                    <option key={dec.value} value={dec.value}>
+                      {dec.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <label className="text-xs font-medium text-slate-400 tracking-wider">
+                  Tracking
+                </label>
+                <input
+                  type="number"
+                  placeholder="0"
+                  value={
+                    Number.isNaN(
+                      parseFloat(selectedElement.style.letterSpacing || ""),
+                    )
+                      ? ""
+                      : parseFloat(selectedElement.style.letterSpacing || "")
+                  }
+                  onChange={(e) =>
+                    handleStyleChange(
+                      "letterSpacing",
+                      e.target.value ? `${e.target.value}px` : "",
+                    )
+                  }
+                  className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-violet-500 transition-colors"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-xs font-medium text-slate-400 tracking-wider">
+                  Line Height
+                </label>
+                <input
+                  type="text"
+                  placeholder="normal"
+                  value={selectedElement.style.lineHeight || ""}
+                  onChange={(e) =>
+                    handleStyleChange("lineHeight", e.target.value)
+                  }
+                  className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-violet-500 transition-colors"
+                />
+              </div>
+            </div>
+          </div>
+        )}
+
+        {["text", "heading"].includes(selectedElement.type) && (
+          <div className="space-y-2">
+            <label className="text-xs font-medium text-slate-400 tracking-wider">
+              Alignment
+            </label>
+            <div className="flex bg-slate-800 rounded-lg p-1 gap-1">
+              {[
+                { id: "left", icon: AlignLeft },
+                { id: "center", icon: AlignCenter },
+                { id: "right", icon: AlignRight },
+              ].map((align) => (
+                <button
+                  key={align.id}
+                  onClick={() =>
+                    updateElement(selectedElement.id, {
+                      style: {
+                        ...selectedElement.style,
+                        textAlign: align.id as any,
+                      },
+                    })
+                  }
+                  className={cn(
+                    "flex-1 flex items-center justify-center py-1.5 rounded-md transition-colors",
+                    selectedElement.style.textAlign === align.id
+                      ? "bg-violet-500 text-white"
+                      : "text-slate-400 hover:bg-slate-700 hover:text-slate-200",
+                  )}
+                >
+                  <align.icon className="w-4 h-4" />
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <label className="text-xs font-medium text-slate-400 tracking-wider">
+              Width
+            </label>
+            <input
+              type="number"
+              name="width"
+              value={
+                typeof selectedElement.size.width === "number"
+                  ? selectedElement.size.width
+                  : ""
+              }
+              onChange={(e) => {
+                let val = parseInt(e.target.value);
+                if (isNaN(val)) val = 0;
+
+                const MIN_WIDTH = selectedElement.size.minWidth ?? 50;
+                const MAX_WIDTH = selectedElement.size.maxWidth ?? 1200;
+                val = Math.max(MIN_WIDTH, Math.min(MAX_WIDTH, val));
+
+                updateElement(selectedElement.id, {
+                  size: {
+                    ...selectedElement.size,
+                    width: val,
+                  },
+                });
+              }}
+              className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-violet-500 transition-colors"
+            />
+          </div>
+          <div className="space-y-2">
+            <label className="text-xs font-medium text-slate-400 tracking-wider">
+              Height
+            </label>
+            <input
+              type="number"
+              name="height"
+              value={
+                typeof selectedElement.size.height === "number"
+                  ? selectedElement.size.height
+                  : ""
+              }
+              onChange={(e) => {
+                let val = parseInt(e.target.value);
+                if (isNaN(val)) val = 0;
+
+                const MIN_HEIGHT = selectedElement.size.minHeight ?? 30;
+                const MAX_HEIGHT = selectedElement.size.maxHeight ?? 1200;
+                val = Math.max(MIN_HEIGHT, Math.min(MAX_HEIGHT, val));
+
+                updateElement(selectedElement.id, {
+                  size: {
+                    ...selectedElement.size,
+                    height: val,
+                  },
+                });
+              }}
+              className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-violet-500 transition-colors"
+            />
+          </div>
+        </div>
+
+        {selectedElement.type === "image" && (
+          <div>
+            <label className="text-xs font-medium text-slate-400 tracking-wider">
+              Content
+            </label>
+            <input
+              type="string"
+              placeholder="Enter your url image"
+              value={selectedElement.content?.src || ""}
+              onChange={(e) =>
+                updateElement(selectedElement.id, {
+                  content: {
+                    ...selectedElement.content,
+                    src: e.target.value || "",
+                  },
+                })
+              }
+              className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-violet-500 transition-colors"
+            />
+          </div>
+        )}
+
+        <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <label className="text-xs font-medium text-slate-400 tracking-wider">
+              Min Width
+            </label>
+            <input
+              type="number"
+              placeholder="50"
+              value={selectedElement.size.minWidth || ""}
+              onChange={(e) =>
+                updateElement(selectedElement.id, {
+                  size: {
+                    ...selectedElement.size,
+                    minWidth: parseInt(e.target.value) || undefined,
+                  },
+                })
+              }
+              className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-violet-500 transition-colors"
+            />
+          </div>
+          <div className="space-y-2">
+            <label className="text-xs font-medium text-slate-400 tracking-wider">
+              Max Width
+            </label>
+            <input
+              type="number"
+              placeholder="1200"
+              value={selectedElement.size.maxWidth || ""}
+              onChange={(e) =>
+                updateElement(selectedElement.id, {
+                  size: {
+                    ...selectedElement.size,
+                    maxWidth: parseInt(e.target.value) || undefined,
+                  },
+                })
+              }
+              className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-violet-500 transition-colors"
+            />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <label className="text-xs font-medium text-slate-400 tracking-wider">
+              Min Height
+            </label>
+            <input
+              type="number"
+              placeholder="30"
+              value={selectedElement.size.minHeight || ""}
+              onChange={(e) =>
+                updateElement(selectedElement.id, {
+                  size: {
+                    ...selectedElement.size,
+                    minHeight: parseInt(e.target.value) || undefined,
+                  },
+                })
+              }
+              className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-violet-500 transition-colors"
+            />
+          </div>
+          <div className="space-y-2">
+            <label className="text-xs font-medium text-slate-400 tracking-wider">
+              Max Height
+            </label>
+            <input
+              type="number"
+              placeholder="1200"
+              value={selectedElement.size.maxHeight || ""}
+              onChange={(e) =>
+                updateElement(selectedElement.id, {
+                  size: {
+                    ...selectedElement.size,
+                    maxHeight: parseInt(e.target.value) || undefined,
+                  },
+                })
+              }
+              className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-violet-500 transition-colors"
+            />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <label className="text-xs font-medium text-slate-400 tracking-wider">
+              Font Size
+            </label>
+            <input
+              type="number"
+              value={
+                Number.isNaN(parseInt(selectedElement.style.fontSize || "16"))
+                  ? ""
+                  : parseInt(selectedElement.style.fontSize || "16")
+              }
+              onChange={(e) =>
+                handleStyleChange("fontSize", `${e.target.value}px`)
+              }
+              className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-violet-500 transition-colors"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-xs font-medium text-slate-400 tracking-wider">
+              Radius
+            </label>
+            <input
+              type="number"
+              value={
+                Number.isNaN(
+                  parseInt(selectedElement.style.borderRadius || "0"),
+                )
+                  ? ""
+                  : parseInt(selectedElement.style.borderRadius || "0")
+              }
+              onChange={(e) =>
+                updateElement(selectedElement.id, {
+                  style: {
+                    ...selectedElement.style,
+                    borderRadius: `${e.target.value}px`,
+                  },
+                })
+              }
+              className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-violet-500 transition-colors"
+            />
+          </div>
+        </div>
+
+        <div className="space-y-2">
+          <label className="text-xs font-medium text-slate-400 tracking-wider">
+            Color
+          </label>
+          <div className="flex gap-2">
+            <input
+              type="color"
+              name="color"
+              value={selectedElement.style.color || "#ffffff"}
+              onChange={handleChange}
+              className="w-10 h-10 bg-slate-800 border border-slate-700 rounded-lg p-1 cursor-pointer"
+            />
+            <input
+              type="text"
+              value={selectedElement.style.color || "#ffffff"}
+              onChange={(e) => handleStyleChange("color", e.target.value)}
+              className="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-violet-500 transition-colors"
+            />
+          </div>
+        </div>
+
+        <div className="space-y-2">
+          <label className="text-xs font-medium text-slate-400 tracking-wider">
+            Background
+          </label>
+          <div className="flex gap-2">
+            <input
+              type="color"
+              name="backgroundColor"
+              value={selectedElement.style.backgroundColor || "transparent"}
+              onChange={handleChange}
+              className="w-10 h-10 bg-slate-800 border border-slate-700 rounded-lg p-1 cursor-pointer"
+            />
+            <input
+              type="text"
+              value={selectedElement.style.backgroundColor || "transparent"}
+              onChange={(e) =>
+                updateElement(selectedElement.id, {
+                  style: {
+                    ...selectedElement.style,
+                    backgroundColor: e.target.value,
+                  },
+                })
+              }
+              className="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-violet-500 transition-colors"
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
