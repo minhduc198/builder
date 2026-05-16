@@ -458,54 +458,152 @@ export const PropertyPanel = ({
           </div>
         </div>
 
-        <div className="space-y-2">
-          <label className="text-xs font-medium text-slate-400 tracking-wider">
-            Color
-          </label>
-          <div className="flex gap-2">
-            <input
-              type="color"
-              name="color"
-              value={selectedElement.style.color || "#ffffff"}
-              onChange={handleChange}
-              className="w-10 h-10 bg-slate-800 border border-slate-700 rounded-lg p-1 cursor-pointer"
-            />
-            <input
-              type="text"
-              value={selectedElement.style.color || "#ffffff"}
-              onChange={(e) => handleStyleChange("color", e.target.value)}
-              className="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-violet-500 transition-colors"
-            />
-          </div>
-        </div>
+        {selectedElement.type === "button" && (
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <label className="text-xs font-medium text-slate-400 tracking-wider">
+                Border Width
+              </label>
+              <input
+                type="number"
+                value={
+                  selectedElement.style.borderWidth !== undefined
+                    ? parseInt(selectedElement.style.borderWidth) || 0
+                    : ""
+                }
+                onChange={(e) => {
+                  const rawValue = e.target.value;
 
-        <div className="space-y-2">
-          <label className="text-xs font-medium text-slate-400 tracking-wider">
-            Background
-          </label>
-          <div className="flex gap-2">
-            <input
-              type="color"
-              name="backgroundColor"
-              value={selectedElement.style.backgroundColor || "transparent"}
-              onChange={handleChange}
-              className="w-10 h-10 bg-slate-800 border border-slate-700 rounded-lg p-1 cursor-pointer"
-            />
-            <input
-              type="text"
-              value={selectedElement.style.backgroundColor || "transparent"}
-              onChange={(e) =>
-                updateElement(selectedElement.id, {
-                  style: {
-                    ...selectedElement.style,
-                    backgroundColor: e.target.value,
-                  },
-                })
-              }
-              className="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-violet-500 transition-colors"
-            />
+                  if (rawValue === "") {
+                    updateElement(selectedElement.id, {
+                      style: {
+                        ...selectedElement.style,
+                        borderWidth: undefined,
+                      },
+                    });
+                    return;
+                  }
+
+                  const parsed = parseInt(rawValue);
+                  const val = Math.max(
+                    0,
+                    Math.min(100, isNaN(parsed) ? 0 : parsed),
+                  );
+
+                  updateElement(selectedElement.id, {
+                    style: {
+                      ...selectedElement.style,
+                      borderWidth: `${val}px`,
+                      borderStyle:
+                        val > 0
+                          ? selectedElement.style.borderStyle || "solid"
+                          : selectedElement.style.borderStyle,
+                    },
+                  });
+                }}
+                className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-violet-500 transition-colors"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-xs font-medium text-slate-400 tracking-wider">
+                Border Style
+              </label>
+              <select
+                value={selectedElement.style.borderStyle || "none"}
+                onChange={(e) =>
+                  handleStyleChange("borderStyle", e.target.value)
+                }
+                className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-violet-500 transition-colors"
+              >
+                <option value="none">None</option>
+                <option value="solid">Solid</option>
+                <option value="dashed">Dashed</option>
+                <option value="dotted">Dotted</option>
+                <option value="double">Double</option>
+              </select>
+            </div>
           </div>
-        </div>
+        )}
+
+        {selectedElement.type === "button" && (
+          <div className="space-y-2">
+            <label className="text-xs font-medium text-slate-400 tracking-wider">
+              Border Color
+            </label>
+            <div className="flex gap-2">
+              <input
+                type="color"
+                value={selectedElement.style.borderColor || "#ffffff"}
+                onChange={(e) =>
+                  handleStyleChange("borderColor", e.target.value)
+                }
+                className="w-10 h-10 bg-slate-800 border border-slate-700 rounded-lg p-1 cursor-pointer"
+              />
+              <input
+                type="text"
+                value={selectedElement.style.borderColor || "#ffffff"}
+                onChange={(e) =>
+                  handleStyleChange("borderColor", e.target.value)
+                }
+                className="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-violet-500 transition-colors"
+              />
+            </div>
+          </div>
+        )}
+
+        {selectedElement.type !== "image" && (
+          <div className="space-y-2">
+            <label className="text-xs font-medium text-slate-400 tracking-wider">
+              Color
+            </label>
+            <div className="flex gap-2">
+              <input
+                type="color"
+                name="color"
+                value={selectedElement.style.color || "#ffffff"}
+                onChange={handleChange}
+                className="w-10 h-10 bg-slate-800 border border-slate-700 rounded-lg p-1 cursor-pointer"
+              />
+              <input
+                type="text"
+                value={selectedElement.style.color || "#ffffff"}
+                onChange={(e) => handleStyleChange("color", e.target.value)}
+                className="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-violet-500 transition-colors"
+              />
+            </div>
+          </div>
+        )}
+
+        {selectedElement.type !== "image" && (
+          <div className="space-y-2">
+            <label className="text-xs font-medium text-slate-400 tracking-wider">
+              Background
+            </label>
+            <div className="flex gap-2">
+              <input
+                type="color"
+                name="backgroundColor"
+                value={selectedElement.style.backgroundColor || "transparent"}
+                onChange={handleChange}
+                className="w-10 h-10 bg-slate-800 border border-slate-700 rounded-lg p-1 cursor-pointer"
+              />
+              <input
+                type="text"
+                value={selectedElement.style.backgroundColor || "transparent"}
+                onChange={(e) =>
+                  updateElement(selectedElement.id, {
+                    style: {
+                      ...selectedElement.style,
+                      backgroundColor: e.target.value,
+                    },
+                  })
+                }
+                className="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-violet-500 transition-colors"
+              />
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

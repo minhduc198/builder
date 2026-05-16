@@ -14,7 +14,11 @@ interface CanvasProps {
   onSelect: (id: string | null) => void;
   onDoubleClick: (id: string) => void;
   onMouseDown: (e: React.MouseEvent, el: BuilderElement) => void;
-  onResizeStart: (e: React.MouseEvent, id: string, direction: "both" | "horizontal") => void;
+  onResizeStart: (
+    e: React.MouseEvent,
+    id: string,
+    direction: "both" | "horizontal",
+  ) => void;
   updateContent: (id: string, content: string) => void;
   onBlur: () => void;
 }

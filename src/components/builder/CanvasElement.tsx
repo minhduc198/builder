@@ -13,7 +13,11 @@ interface CanvasElementProps {
   onSelect: (id: string) => void;
   onDoubleClick: (id: string) => void;
   onMouseDown: (e: React.MouseEvent, el: BuilderElement) => void;
-  onResizeStart: (e: React.MouseEvent, id: string, direction: "both" | "horizontal") => void;
+  onResizeStart: (
+    e: React.MouseEvent,
+    id: string,
+    direction: "both" | "horizontal",
+  ) => void;
   updateContent: (id: string, content: string) => void;
   onBlur: () => void;
 }
@@ -131,7 +135,8 @@ export const CanvasElement = ({
     return React.createElement(Tag, {
       key: `view-${el.id}`,
       id: `input-${el.id}`,
-      className: "w-full text-inherit p-1 break-words outline-none pointer-events-none",
+      className:
+        "w-full text-inherit p-1 break-words outline-none pointer-events-none",
       style: commonStyle,
       dangerouslySetInnerHTML: { __html: el.content?.text || "" },
     });
@@ -156,45 +161,52 @@ export const CanvasElement = ({
         "group transition-shadow duration-200",
         isEditMode &&
           isSelected &&
-          "ring-2 ring-violet-500 shadow-[0_0_20px_rgba(139,92,246,0.3)]",
-        isEditMode && !isSelected && "hover:ring-1 hover:ring-slate-700",
+          "ring-2 ring-offset-2 ring-offset-slate-950 ring-violet-500 shadow-[0_0_20px_rgba(139,92,246,0.3)]",
+        isEditMode &&
+          !isSelected &&
+          "hover:ring-1 hover:ring-offset-2 hover:ring-offset-slate-950 hover:ring-slate-700",
       )}
     >
-      {isTextType && renderTextContent()}
-      {el.type === "button" && (
-        <button
-          className="w-full h-full px-4"
-          style={{
-            borderRadius: el.style.borderRadius,
-            textAlign: el.style.textAlign,
-          }}
-        >
-          <input
-            id={`input-${el.id}`}
-            ref={inputRef}
-            value={el.content?.text || ""}
-            onChange={(e) => updateContent(el.id, e.target.value)}
-            onBlur={onBlur}
-            className={cn(
-              "w-full h-full border-none outline-none bg-transparent text-inherit p-1 no-scrollbar resize-none text-center",
-              !isEditing && "pointer-events-none select-none cursor-default",
-            )}
-            autoFocus={isEditing}
-            readOnly={!isEditing}
+      <div className="w-full h-full overflow-hidden flex items-center justify-center relative rounded-[inherit]">
+        {isTextType && renderTextContent()}
+        {el.type === "button" && (
+          <button
+            className="w-full h-full px-4 bg-transparent border-none outline-none"
+            style={{
+              borderRadius: el.style.borderRadius,
+              textAlign: el.style.textAlign,
+            }}
+          >
+            <input
+              id={`input-${el.id}`}
+              ref={inputRef}
+              value={el.content?.text || ""}
+              onChange={(e) => updateContent(el.id, e.target.value)}
+              onBlur={onBlur}
+              className={cn(
+                "w-full h-full border-none outline-none bg-transparent text-inherit p-1 no-scrollbar resize-none text-center",
+                !isEditing && "pointer-events-none select-none cursor-default",
+              )}
+              autoFocus={isEditing}
+              readOnly={!isEditing}
+            />
+          </button>
+        )}
+        {el.type === "image" && (
+          <img
+            src={el.content?.src || ""}
+            alt="builder"
+            className="w-full h-full object-cover pointer-events-none"
+            style={{ borderRadius: el.style.borderRadius }}
           />
-        </button>
-      )}
-      {el.type === "image" && (
-        <img
-          src={el.content?.src || ""}
-          alt="builder"
-          className="w-full h-full object-cover pointer-events-none"
-          style={{ borderRadius: el.style.borderRadius }}
-        />
-      )}
-      {el.type === "icon" && (
-        <MousePointer2 className="w-8 h-8" style={{ color: el.style.color }} />
-      )}
+        )}
+        {el.type === "icon" && (
+          <MousePointer2
+            className="w-8 h-8"
+            style={{ color: el.style.color }}
+          />
+        )}
+      </div>
 
       {isEditMode && isSelected && (
         <>
@@ -202,16 +214,14 @@ export const CanvasElement = ({
             <Move className="w-3 h-3 text-white" />
           </div>
 
-          {/* Horizontal Handle */}
           <div
-            className="absolute top-1/2 -right-1 w-2 h-4 -translate-y-1/2 bg-violet-500 rounded-sm cursor-ew-resize shadow-lg flex items-center justify-center z-20"
+            className="absolute top-1/2 -right-1 w-2 h-full -translate-y-1/2  cursor-ew-resize  z-20"
             onMouseDown={(e) => {
               e.stopPropagation();
               onResizeStart(e, el.id, "horizontal");
             }}
           />
 
-          {/* Corner Handle */}
           <div
             className="absolute -bottom-1 -right-1 w-4 h-4 bg-violet-500 rounded-sm cursor-nwse-resize shadow-lg flex items-center justify-center z-20"
             onMouseDown={(e) => {
