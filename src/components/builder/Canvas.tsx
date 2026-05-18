@@ -1,9 +1,9 @@
 "use client";
 
-import React from "react";
-import { Plus } from "lucide-react";
+import React, { useEffect, useState } from "react";
 import { BuilderElement } from "@/types";
 import { CanvasElement } from "./CanvasElement";
+import { cn } from "@/lib/utils";
 
 interface CanvasProps {
   elements: BuilderElement[];
@@ -37,47 +37,75 @@ export const Canvas = ({
   onBlur,
 }: CanvasProps) => {
   const isEditMode = mode === "edit";
+  const [scale, setScale] = useState(1);
+
+  useEffect(() => {
+    if (!canvasRef.current) return;
+    const canvas = canvasRef.current;
+    const parent = canvas.parentElement;
+    if (!parent) return;
+
+    const updateScale = () => {
+      const parentWidth = parent.clientWidth;
+      const parentHeight = parent.clientHeight;
+      const padding = isEditMode ? 48 : 0;
+      const scaleX = (parentWidth - padding) / 1200;
+      const scaleY = (parentHeight - padding) / 800;
+      const newScale = Math.min(1, scaleX, scaleY);
+      setScale(newScale);
+    };
+
+    const resizeObserver = new ResizeObserver(updateScale);
+    resizeObserver.observe(parent);
+
+    updateScale();
+
+    return () => resizeObserver.disconnect();
+  }, [isEditMode, canvasRef]);
 
   return (
     <div
-      ref={canvasRef}
       onClick={() => {
         if (isEditMode) {
           onSelect(null);
           onBlur();
         }
       }}
-      className="flex-1 relative overflow-auto bg-slate-950"
+      className="flex-1 relative overflow-hidden bg-slate-950 flex justify-center items-center p-6 select-none"
     >
-      {isEditMode && (
-        <div className="absolute inset-0 bg-[radial-gradient(#1e293b_1px,transparent_1px)] [background-size:24px_24px] pointer-events-none" />
-      )}
-
-      <div className="min-h-full min-w-full relative">
-        {elements.map((el) => (
-          <CanvasElement
-            key={el.id}
-            el={el}
-            mode={mode}
-            selectedId={selectedId}
-            editingId={editingId}
-            onSelect={onSelect}
-            onDoubleClick={onDoubleClick}
-            onMouseDown={onMouseDown}
-            onResizeStart={onResizeStart}
-            updateContent={updateContent}
-            onBlur={onBlur}
-          />
-        ))}
-
-        {elements.length === 0 && isEditMode && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center text-slate-600 pointer-events-none">
-            <Plus className="w-12 h-12 mb-4 opacity-20" />
-            <p className="text-lg font-medium opacity-40">
-              Drag elements here to build your page
-            </p>
-          </div>
+      <div
+        ref={canvasRef}
+        className={cn(
+          "w-[1200px] min-h-[800px] relative transition-all duration-300 shrink-0 origin-center bg-[#020617] rounded-xl overflow-hidden",
+          isEditMode
+            ? "outline outline-1 outline-slate-800 shadow-[0_24px_50px_-12px_rgba(0,0,0,0.7)]"
+            : "shadow-none",
         )}
+        style={{
+          transform: `scale(${scale})`,
+        }}
+      >
+        {isEditMode && (
+          <div className="absolute inset-0 bg-[radial-gradient(#1e293b_1px,transparent_1px)] [background-size:24px_24px] pointer-events-none" />
+        )}
+
+        <div className="min-h-full min-w-full relative">
+          {elements.map((el) => (
+            <CanvasElement
+              key={el.id}
+              el={el}
+              mode={mode}
+              selectedId={selectedId}
+              editingId={editingId}
+              onSelect={onSelect}
+              onDoubleClick={onDoubleClick}
+              onMouseDown={onMouseDown}
+              onResizeStart={onResizeStart}
+              updateContent={updateContent}
+              onBlur={onBlur}
+            />
+          ))}
+        </div>
       </div>
     </div>
   );

@@ -1,9 +1,10 @@
 "use client";
 
 import React, { useRef, useEffect, useCallback, CSSProperties } from "react";
-import { Move, MousePointer2 } from "lucide-react";
+import { Move } from "lucide-react";
 import { BuilderElement } from "@/types";
 import { cn } from "@/lib/utils";
+import { AVAILABLE_ICONS } from "@/constants";
 
 interface CanvasElementProps {
   el: BuilderElement;
@@ -28,7 +29,7 @@ function getElementStyle(
   isSelected: boolean,
   isEditing: boolean,
 ): CSSProperties {
-  const isTextType = ["text", "heading"].includes(el.type);
+  const isTextType = ["text", "heading", "button"].includes(el.type);
 
   return {
     position: "absolute",
@@ -40,7 +41,7 @@ function getElementStyle(
       ? { minHeight: el.size.height }
       : {}),
     display: "flex",
-    alignItems: isTextType ? "start" : "center",
+    alignItems: isTextType && el.type !== "button" ? "start" : "center",
     justifyContent: "center",
     ...el.style,
     cursor: !isEditMode
@@ -73,12 +74,11 @@ export const CanvasElement = ({
   const isEditMode = mode === "edit";
 
   const contentRef = useRef<HTMLElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (!isEditing) return;
 
-    if ((el.type === "text" || el.type === "heading") && contentRef.current) {
+    if ((el.type === "text" || el.type === "heading" || el.type === "button") && contentRef.current) {
       const node = contentRef.current;
       node.innerHTML = el.content?.text || "";
       node.focus();
@@ -88,8 +88,6 @@ export const CanvasElement = ({
       const sel = window.getSelection();
       sel?.removeAllRanges();
       sel?.addRange(range);
-    } else if (inputRef.current) {
-      inputRef.current.focus();
     }
   }, [isEditing, el.type]);
 
@@ -101,7 +99,7 @@ export const CanvasElement = ({
     [el.id, updateContent, onBlur],
   );
 
-  const isTextType = el.type === "text" || el.type === "heading";
+  const isTextType = el.type === "text" || el.type === "heading" || el.type === "button";
 
   const renderTextContent = () => {
     const Tag = (el.content?.tag || "p") as keyof React.JSX.IntrinsicElements;
@@ -121,7 +119,10 @@ export const CanvasElement = ({
         key: `editing-${el.id}`,
         id: `input-${el.id}`,
         ref: contentRef,
-        className: "w-full text-inherit p-1 break-words outline-none",
+        className: cn(
+          "w-full text-inherit break-words outline-none",
+          el.type === "button" ? "px-4 py-2" : "p-1"
+        ),
         style: commonStyle,
         contentEditable: true,
         suppressContentEditableWarning: true,
@@ -135,8 +136,10 @@ export const CanvasElement = ({
     return React.createElement(Tag, {
       key: `view-${el.id}`,
       id: `input-${el.id}`,
-      className:
-        "w-full text-inherit p-1 break-words outline-none pointer-events-none",
+      className: cn(
+        "w-full text-inherit break-words outline-none pointer-events-none",
+        el.type === "button" ? "px-4 py-2" : "p-1"
+      ),
       style: commonStyle,
       dangerouslySetInnerHTML: { __html: el.content?.text || "" },
     });
@@ -169,29 +172,6 @@ export const CanvasElement = ({
     >
       <div className="w-full h-full overflow-hidden flex items-center justify-center relative rounded-[inherit]">
         {isTextType && renderTextContent()}
-        {el.type === "button" && (
-          <button
-            className="w-full h-full px-4 bg-transparent border-none outline-none"
-            style={{
-              borderRadius: el.style.borderRadius,
-              textAlign: el.style.textAlign,
-            }}
-          >
-            <input
-              id={`input-${el.id}`}
-              ref={inputRef}
-              value={el.content?.text || ""}
-              onChange={(e) => updateContent(el.id, e.target.value)}
-              onBlur={onBlur}
-              className={cn(
-                "w-full h-full border-none outline-none bg-transparent text-inherit p-1 no-scrollbar resize-none text-center",
-                !isEditing && "pointer-events-none select-none cursor-default",
-              )}
-              autoFocus={isEditing}
-              readOnly={!isEditing}
-            />
-          </button>
-        )}
         {el.type === "image" && (
           <img
             src={el.content?.src || ""}
@@ -200,12 +180,16 @@ export const CanvasElement = ({
             style={{ borderRadius: el.style.borderRadius }}
           />
         )}
-        {el.type === "icon" && (
-          <MousePointer2
-            className="w-8 h-8"
-            style={{ color: el.style.color }}
-          />
-        )}
+        {el.type === "icon" && (() => {
+          const IconComponent = AVAILABLE_ICONS[el.content?.icon || "MousePointer2"] || AVAILABLE_ICONS["MousePointer2"];
+          const iconSize = typeof el.size.width === "number" ? el.size.width : parseInt(String(el.size.width)) || 32;
+          return (
+            <IconComponent
+              size={iconSize}
+              style={{ color: el.style.color }}
+            />
+          );
+        })()}
       </div>
 
       {isEditMode && isSelected && (

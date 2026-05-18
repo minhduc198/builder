@@ -10,6 +10,7 @@ import {
   FONT_FAMILIES,
   FONT_STYLES,
   TEXT_DECORATIONS,
+  AVAILABLE_ICONS,
 } from "@/constants";
 
 interface PropertyPanelProps {
@@ -48,7 +49,7 @@ export const PropertyPanel = ({
   };
 
   return (
-    <div className="w-72 bg-slate-900/50 backdrop-blur-xl border-l border-slate-800 p-6 flex flex-col gap-6 overflow-y-auto shrink-0">
+    <div className="w-72 bg-slate-900/50 backdrop-blur-xl border-l border-slate-800 p-3 flex flex-col gap-6 overflow-y-auto shrink-0">
       <div className="flex items-center gap-2">
         <Settings2 className="w-5 h-5 text-violet-400" />
         <h2 className="text-lg font-semibold text-slate-100">Properties</h2>
@@ -246,14 +247,69 @@ export const PropertyPanel = ({
           </div>
         )}
 
-        <div className="grid grid-cols-2 gap-4">
+        {selectedElement.type !== "icon" ? (
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <label className="text-xs font-medium text-slate-400 tracking-wider">
+                Width
+              </label>
+              <input
+                type="text"
+                name="width"
+                value={
+                  typeof selectedElement.size.width === "number"
+                    ? Math.round(selectedElement.size.width).toString()
+                    : selectedElement.size.width?.toString() || ""
+                }
+                onChange={(e) => {
+                  const raw = e.target.value;
+                  let val: string | number = raw;
+                  if (/^\d+$/.test(raw)) val = parseInt(raw);
+                  updateElement(selectedElement.id, {
+                    size: {
+                      ...selectedElement.size,
+                      width: val,
+                    },
+                  });
+                }}
+                className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-violet-500 transition-colors"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-xs font-medium text-slate-400 tracking-wider">
+                Height
+              </label>
+              <input
+                type="text"
+                name="height"
+                value={
+                  typeof selectedElement.size.height === "number"
+                    ? Math.round(selectedElement.size.height).toString()
+                    : selectedElement.size.height?.toString() || ""
+                }
+                onChange={(e) => {
+                  const raw = e.target.value;
+                  let val: string | number = raw;
+                  if (/^\d+$/.test(raw)) val = parseInt(raw);
+                  updateElement(selectedElement.id, {
+                    size: {
+                      ...selectedElement.size,
+                      height: val,
+                    },
+                  });
+                }}
+                className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-violet-500 transition-colors"
+              />
+            </div>
+          </div>
+        ) : (
           <div className="space-y-2">
             <label className="text-xs font-medium text-slate-400 tracking-wider">
-              Width
+              Size
             </label>
             <input
               type="number"
-              name="width"
+              name="size"
               value={
                 typeof selectedElement.size.width === "number"
                   ? selectedElement.size.width
@@ -262,44 +318,11 @@ export const PropertyPanel = ({
               onChange={(e) => {
                 let val = parseInt(e.target.value);
                 if (isNaN(val)) val = 0;
-
-                const MIN_WIDTH = selectedElement.size.minWidth ?? 50;
-                const MAX_WIDTH = selectedElement.size.maxWidth ?? 1200;
-                val = Math.max(MIN_WIDTH, Math.min(MAX_WIDTH, val));
-
+                val = Math.max(0, val);
                 updateElement(selectedElement.id, {
                   size: {
                     ...selectedElement.size,
                     width: val,
-                  },
-                });
-              }}
-              className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-violet-500 transition-colors"
-            />
-          </div>
-          <div className="space-y-2">
-            <label className="text-xs font-medium text-slate-400 tracking-wider">
-              Height
-            </label>
-            <input
-              type="number"
-              name="height"
-              value={
-                typeof selectedElement.size.height === "number"
-                  ? selectedElement.size.height
-                  : ""
-              }
-              onChange={(e) => {
-                let val = parseInt(e.target.value);
-                if (isNaN(val)) val = 0;
-
-                const MIN_HEIGHT = selectedElement.size.minHeight ?? 30;
-                const MAX_HEIGHT = selectedElement.size.maxHeight ?? 1200;
-                val = Math.max(MIN_HEIGHT, Math.min(MAX_HEIGHT, val));
-
-                updateElement(selectedElement.id, {
-                  size: {
-                    ...selectedElement.size,
                     height: val,
                   },
                 });
@@ -307,8 +330,7 @@ export const PropertyPanel = ({
               className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-violet-500 transition-colors"
             />
           </div>
-        </div>
-
+        )}
         {selectedElement.type === "image" && (
           <div>
             <label className="text-xs font-medium text-slate-400 tracking-wider">
@@ -331,132 +353,97 @@ export const PropertyPanel = ({
           </div>
         )}
 
-        <div className="grid grid-cols-2 gap-4">
+        {selectedElement.type === "icon" && (
           <div className="space-y-2">
             <label className="text-xs font-medium text-slate-400 tracking-wider">
-              Min Width
+              Icon
             </label>
-            <input
-              type="number"
-              placeholder="50"
-              value={selectedElement.size.minWidth || ""}
-              onChange={(e) =>
-                updateElement(selectedElement.id, {
-                  size: {
-                    ...selectedElement.size,
-                    minWidth: parseInt(e.target.value) || undefined,
-                  },
-                })
-              }
-              className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-violet-500 transition-colors"
-            />
+            <div className="grid grid-cols-5 gap-2">
+              {Object.keys(AVAILABLE_ICONS).map((iconName) => {
+                const IconComp = AVAILABLE_ICONS[iconName];
+                return (
+                  <button
+                    key={iconName}
+                    onClick={() =>
+                      updateElement(selectedElement.id, {
+                        content: {
+                          ...selectedElement.content,
+                          icon: iconName,
+                        },
+                      })
+                    }
+                    className={cn(
+                      "flex justify-center items-center p-2 rounded-lg transition-colors border",
+                      selectedElement.content?.icon === iconName ||
+                        (!selectedElement.content?.icon &&
+                          iconName === "MousePointer2")
+                        ? "bg-violet-500/20 border-violet-500 text-violet-400"
+                        : "bg-slate-800 border-slate-700 text-slate-400 hover:border-slate-500 hover:text-slate-200",
+                    )}
+                    title={iconName}
+                  >
+                    <IconComp className="w-5 h-5" />
+                  </button>
+                );
+              })}
+            </div>
           </div>
-          <div className="space-y-2">
-            <label className="text-xs font-medium text-slate-400 tracking-wider">
-              Max Width
-            </label>
-            <input
-              type="number"
-              placeholder="1200"
-              value={selectedElement.size.maxWidth || ""}
-              onChange={(e) =>
-                updateElement(selectedElement.id, {
-                  size: {
-                    ...selectedElement.size,
-                    maxWidth: parseInt(e.target.value) || undefined,
-                  },
-                })
-              }
-              className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-violet-500 transition-colors"
-            />
-          </div>
-        </div>
+        )}
 
-        <div className="grid grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <label className="text-xs font-medium text-slate-400 tracking-wider">
-              Min Height
-            </label>
-            <input
-              type="number"
-              placeholder="30"
-              value={selectedElement.size.minHeight || ""}
-              onChange={(e) =>
-                updateElement(selectedElement.id, {
-                  size: {
-                    ...selectedElement.size,
-                    minHeight: parseInt(e.target.value) || undefined,
-                  },
-                })
-              }
-              className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-violet-500 transition-colors"
-            />
-          </div>
-          <div className="space-y-2">
-            <label className="text-xs font-medium text-slate-400 tracking-wider">
-              Max Height
-            </label>
-            <input
-              type="number"
-              placeholder="1200"
-              value={selectedElement.size.maxHeight || ""}
-              onChange={(e) =>
-                updateElement(selectedElement.id, {
-                  size: {
-                    ...selectedElement.size,
-                    maxHeight: parseInt(e.target.value) || undefined,
-                  },
-                })
-              }
-              className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-violet-500 transition-colors"
-            />
-          </div>
-        </div>
+        {selectedElement.type !== "icon" && (
+          <div
+            className={cn("grid grid-cols-2 gap-4", {
+              "grid-cols-1": selectedElement.type === "image",
+            })}
+          >
+            {selectedElement.type !== "image" && (
+              <div className="space-y-2">
+                <label className="text-xs font-medium text-slate-400 tracking-wider">
+                  Font Size
+                </label>
+                <input
+                  type="number"
+                  value={
+                    Number.isNaN(
+                      parseInt(selectedElement.style.fontSize || "16"),
+                    )
+                      ? ""
+                      : parseInt(selectedElement.style.fontSize || "16")
+                  }
+                  onChange={(e) =>
+                    handleStyleChange("fontSize", `${e.target.value}px`)
+                  }
+                  className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-violet-500 transition-colors"
+                />
+              </div>
+            )}
 
-        <div className="grid grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <label className="text-xs font-medium text-slate-400 tracking-wider">
-              Font Size
-            </label>
-            <input
-              type="number"
-              value={
-                Number.isNaN(parseInt(selectedElement.style.fontSize || "16"))
-                  ? ""
-                  : parseInt(selectedElement.style.fontSize || "16")
-              }
-              onChange={(e) =>
-                handleStyleChange("fontSize", `${e.target.value}px`)
-              }
-              className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-violet-500 transition-colors"
-            />
+            <div className="space-y-2">
+              <label className="text-xs font-medium text-slate-400 tracking-wider">
+                Radius
+              </label>
+              <input
+                type="number"
+                value={
+                  Number.isNaN(
+                    parseInt(selectedElement.style.borderRadius || "0"),
+                  )
+                    ? ""
+                    : parseInt(selectedElement.style.borderRadius || "0")
+                }
+                onChange={(e) =>
+                  updateElement(selectedElement.id, {
+                    style: {
+                      ...selectedElement.style,
+                      borderRadius: `${e.target.value}px`,
+                    },
+                  })
+                }
+                className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-violet-500 transition-colors"
+              />
+            </div>
           </div>
-
-          <div className="space-y-2">
-            <label className="text-xs font-medium text-slate-400 tracking-wider">
-              Radius
-            </label>
-            <input
-              type="number"
-              value={
-                Number.isNaN(
-                  parseInt(selectedElement.style.borderRadius || "0"),
-                )
-                  ? ""
-                  : parseInt(selectedElement.style.borderRadius || "0")
-              }
-              onChange={(e) =>
-                updateElement(selectedElement.id, {
-                  style: {
-                    ...selectedElement.style,
-                    borderRadius: `${e.target.value}px`,
-                  },
-                })
-              }
-              className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-violet-500 transition-colors"
-            />
-          </div>
-        </div>
+        )}
 
         {selectedElement.type === "button" && (
           <div className="grid grid-cols-2 gap-4">
@@ -563,7 +550,7 @@ export const PropertyPanel = ({
                 name="color"
                 value={selectedElement.style.color || "#ffffff"}
                 onChange={handleChange}
-                className="w-10 h-10 bg-slate-800 border border-slate-700 rounded-lg p-1 cursor-pointer"
+                className="w-10 h-10 bg-slate-800 border border-slate-700 rounded-lg p-1 cursor-pointer shrink-0"
               />
               <input
                 type="text"
@@ -586,7 +573,7 @@ export const PropertyPanel = ({
                 name="backgroundColor"
                 value={selectedElement.style.backgroundColor || "transparent"}
                 onChange={handleChange}
-                className="w-10 h-10 bg-slate-800 border border-slate-700 rounded-lg p-1 cursor-pointer"
+                className="w-10 h-10 bg-slate-800 border border-slate-700 rounded-lg p-1 cursor-pointer shrink-0"
               />
               <input
                 type="text"

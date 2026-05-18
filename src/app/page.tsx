@@ -8,6 +8,7 @@ import { PropertyPanel } from "../components/builder/PropertyPanel";
 import { Header } from "../components/builder/Header";
 import { Canvas } from "../components/builder/Canvas";
 import { createBuilderElement } from "@/lib/utils";
+import { generateHTML } from "@/lib/htmlGenerator";
 
 export default function BuilderPage() {
   const [elements, setElements] = useState<BuilderElement[]>([]);
@@ -22,9 +23,55 @@ export default function BuilderPage() {
   const [mode, setMode] = useState<"edit" | "preview">("edit");
   const [sidebarDragInfo, setSidebarDragInfo] = useState<{
     type: ElementType;
+    iconName?: string;
     mouseX: number;
     mouseY: number;
   } | null>(null);
+
+  useEffect(() => {
+    const saved = localStorage.getItem("builder-elements");
+    if (saved) {
+      try {
+        setElements(JSON.parse(saved));
+      } catch (e) {
+        console.error("Failed to load elements from localStorage", e);
+      }
+    }
+  }, []);
+
+  const handleSave = useCallback(() => {
+    localStorage.setItem("builder-elements", JSON.stringify(elements));
+
+    // Also download JSON database backup
+    const jsonString = JSON.stringify(elements, null, 2);
+    const blob = new Blob([jsonString], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const downloadAnchor = document.createElement("a");
+    downloadAnchor.setAttribute("href", url);
+    downloadAnchor.setAttribute("download", "builder-layout.json");
+    document.body.appendChild(downloadAnchor);
+    downloadAnchor.click();
+    downloadAnchor.remove();
+    URL.revokeObjectURL(url);
+
+    alert(
+      "Đã lưu trạng thái thiết kế và tự động tải tệp JSON về máy thành công!",
+    );
+  }, [elements]);
+
+  const handlePublish = useCallback(() => {
+    const htmlContent = generateHTML(elements);
+
+    const blob = new Blob([htmlContent], { type: "text/html" });
+    const url = URL.createObjectURL(blob);
+    const downloadAnchor = document.createElement("a");
+    downloadAnchor.setAttribute("href", url);
+    downloadAnchor.setAttribute("download", "index.html");
+    document.body.appendChild(downloadAnchor);
+    downloadAnchor.click();
+    downloadAnchor.remove();
+    URL.revokeObjectURL(url);
+  }, [elements]);
 
   const elementsRef = useRef(elements);
   elementsRef.current = elements;
@@ -37,12 +84,18 @@ export default function BuilderPage() {
     fontSize: number;
   } | null>(null);
 
-  const addElement = useCallback((type: ElementType, x = 100, y = 100) => {
-    const newElement = createBuilderElement(type, x, y);
-    setElements((prev) => [...prev, newElement]);
-    setSelectedId(newElement.id);
-    setEditingId(null);
-  }, []);
+  const addElement = useCallback(
+    (type: ElementType, x = 100, y = 100, iconName?: string) => {
+      const newElement = createBuilderElement(type, x, y);
+      if (iconName && newElement.content) {
+        newElement.content.icon = iconName;
+      }
+      setElements((prev) => [...prev, newElement]);
+      setSelectedId(newElement.id);
+      setEditingId(null);
+    },
+    [],
+  );
 
   const updateElement = useCallback(
     (id: string, updates: Partial<BuilderElement>) => {
@@ -59,8 +112,13 @@ export default function BuilderPage() {
   }, []);
 
   const handleSidebarDragStart = useCallback(
-    (type: ElementType, e: React.MouseEvent) => {
-      setSidebarDragInfo({ type, mouseX: e.clientX, mouseY: e.clientY });
+    (type: ElementType, e: React.MouseEvent, iconName?: string) => {
+      setSidebarDragInfo({
+        type,
+        iconName,
+        mouseX: e.clientX,
+        mouseY: e.clientY,
+      });
     },
     [],
   );
@@ -74,9 +132,10 @@ export default function BuilderPage() {
     const handleUp = (e: MouseEvent) => {
       const rect = canvasRef.current?.getBoundingClientRect();
       if (rect && sidebarDragInfo) {
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
-        if (x >= 0 && y >= 0 && x <= rect.width && y <= rect.height) {
+        const scale = rect.width / 1200;
+        const x = (e.clientX - rect.left) / scale;
+        const y = (e.clientY - rect.top) / scale;
+        if (x >= 0 && y >= 0 && x <= 1200 && y <= rect.height / scale) {
           const defaultSize =
             sidebarDragInfo.type === "image"
               ? { w: 200, h: 150 }
@@ -85,6 +144,7 @@ export default function BuilderPage() {
             sidebarDragInfo.type,
             x - defaultSize.w / 2,
             y - defaultSize.h / 2,
+            sidebarDragInfo.iconName,
           );
         }
       }
@@ -98,27 +158,30 @@ export default function BuilderPage() {
     };
   }, [sidebarDragInfo, addElement]);
 
-  // Drag & Resize
   useEffect(() => {
     if (!draggingId && !resizingState) return;
 
     const handleMove = (e: MouseEvent) => {
       if (!canvasRef.current) return;
       const rect = canvasRef.current.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
+      const scale = rect.width / 1200;
+      const x = (e.clientX - rect.left) / scale;
+      const y = (e.clientY - rect.top) / scale;
 
       if (draggingId) {
         updateElement(draggingId, {
-          position: { x: x - dragOffset.x, y: y - dragOffset.y },
+          position: {
+            x: Math.round(x - dragOffset.x),
+            y: Math.round(y - dragOffset.y),
+          },
         });
       } else if (resizingState) {
         const { id, direction } = resizingState;
         const el = elementsRef.current.find((el) => el.id === id);
         if (!el) return;
 
-        const MIN_WIDTH = el.size.minWidth ?? 50;
-        const MIN_HEIGHT = el.size.minHeight ?? 30;
+        const MIN_WIDTH = el.size.minWidth ?? (el.type === "icon" ? 10 : 50);
+        const MIN_HEIGHT = el.size.minHeight ?? (el.type === "icon" ? 10 : 30);
         const MAX_WIDTH = el.size.maxWidth ?? 1200;
         const MAX_HEIGHT = el.size.maxHeight ?? 1200;
 
@@ -140,13 +203,25 @@ export default function BuilderPage() {
           );
         }
 
-        const isTextType = ["text", "heading"].includes(el.type);
+        if (el.type === "icon") {
+          if (direction === "both") {
+            const size = Math.max(newWidth, newHeight);
+            newWidth = size;
+            newHeight = size;
+          } else if (direction === "horizontal") {
+            newHeight = newWidth;
+          }
+        }
+
+        newWidth = Math.round(newWidth);
+        newHeight = Math.round(newHeight);
+
+        const isTextType = ["text", "heading", "button"].includes(el.type);
 
         if (isTextType && resizeStartRef.current && direction === "both") {
           const scale = newWidth / resizeStartRef.current.width;
-          const newFontSize = Math.max(
-            10,
-            resizeStartRef.current.fontSize * scale,
+          const newFontSize = Math.round(
+            Math.max(10, resizeStartRef.current.fontSize * scale),
           );
 
           updateElement(id, {
@@ -213,14 +288,17 @@ export default function BuilderPage() {
           }
           setMode(newMode);
         }}
-        onSave={() => console.log("Saving...", elements)}
+        onSave={handleSave}
+        onPublish={handlePublish}
       />
 
       <div className="flex flex-1 overflow-hidden relative">
         {mode === "edit" && (
           <Sidebar
             onSidebarDragStart={handleSidebarDragStart}
-            onAddElement={addElement}
+            onAddElement={(type, iconName) =>
+              addElement(type, 100, 100, iconName)
+            }
           />
         )}
 
@@ -240,10 +318,11 @@ export default function BuilderPage() {
             if (selectedId === el.id && editingId !== el.id) {
               const rect = canvasRef.current?.getBoundingClientRect();
               if (rect) {
+                const scale = rect.width / 1200;
                 setDraggingId(el.id);
                 setDragOffset({
-                  x: e.clientX - rect.left - el.position.x,
-                  y: e.clientY - rect.top - el.position.y,
+                  x: (e.clientX - rect.left) / scale - el.position.x,
+                  y: (e.clientY - rect.top) / scale - el.position.y,
                 });
               }
             }

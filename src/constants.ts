@@ -1,6 +1,18 @@
 import { BuilderElement, ElementType } from "@/types";
-
-// ─── Typography Options ───────────────────────────────────────────
+import {
+  MousePointer2,
+  Heart,
+  Star,
+  Circle,
+  Triangle,
+  Smile,
+  Zap,
+  Check,
+  X,
+  ArrowRight,
+  User,
+  Settings
+} from "lucide-react";
 
 export const HEADING_TAGS = [
   { value: "h1", label: "Heading 1", defaultSize: "32", defaultWeight: "bold" },
@@ -84,4 +96,19 @@ export const DEFAULT_STYLE: Record<ElementType, BuilderElement["style"]> = {
   icon: {
     color: "#ffffff",
   },
+};
+
+export const AVAILABLE_ICONS: Record<string, any> = {
+  MousePointer2,
+  Heart,
+  Star,
+  Circle,
+  Triangle,
+  Smile,
+  Zap,
+  Check,
+  X,
+  ArrowRight,
+  User,
+  Settings
 };
