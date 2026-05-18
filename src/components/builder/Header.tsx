@@ -17,7 +17,7 @@ export const Header = ({ mode, setMode, onSave, onPublish }: HeaderProps) => {
       <div className="flex items-center gap-4">
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 bg-violet-600 rounded-lg flex items-center justify-center">
-            <span className="font-bold text-white text-lg">V</span>
+            <span className="font-bold text-white text-lg">Đ</span>
           </div>
           <h1 className="text-lg font-bold text-slate-100 hidden md:block">
             My Builder
@@ -60,7 +60,7 @@ export const Header = ({ mode, setMode, onSave, onPublish }: HeaderProps) => {
           <Save className="w-4 h-4" />
           Save
         </button>
-        <button 
+        <button
           onClick={onPublish}
           className="flex items-center gap-2 px-4 py-2 bg-violet-600 hover:bg-violet-500 text-white rounded-lg text-sm font-medium transition-all shadow-lg shadow-violet-500/20 active:scale-95"
         >

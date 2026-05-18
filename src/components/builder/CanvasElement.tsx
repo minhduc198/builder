@@ -78,7 +78,10 @@ export const CanvasElement = ({
   useEffect(() => {
     if (!isEditing) return;
 
-    if ((el.type === "text" || el.type === "heading" || el.type === "button") && contentRef.current) {
+    if (
+      (el.type === "text" || el.type === "heading" || el.type === "button") &&
+      contentRef.current
+    ) {
       const node = contentRef.current;
       node.innerHTML = el.content?.text || "";
       node.focus();
@@ -99,7 +102,8 @@ export const CanvasElement = ({
     [el.id, updateContent, onBlur],
   );
 
-  const isTextType = el.type === "text" || el.type === "heading" || el.type === "button";
+  const isTextType =
+    el.type === "text" || el.type === "heading" || el.type === "button";
 
   const renderTextContent = () => {
     const Tag = (el.content?.tag || "p") as keyof React.JSX.IntrinsicElements;
@@ -121,7 +125,7 @@ export const CanvasElement = ({
         ref: contentRef,
         className: cn(
           "w-full text-inherit break-words outline-none",
-          el.type === "button" ? "px-4 py-2" : "p-1"
+          el.type === "button" ? "px-4 py-2" : "p-1",
         ),
         style: commonStyle,
         contentEditable: true,
@@ -138,7 +142,7 @@ export const CanvasElement = ({
       id: `input-${el.id}`,
       className: cn(
         "w-full text-inherit break-words outline-none pointer-events-none",
-        el.type === "button" ? "px-4 py-2" : "p-1"
+        el.type === "button" ? "px-4 py-2" : "p-1",
       ),
       style: commonStyle,
       dangerouslySetInnerHTML: { __html: el.content?.text || "" },
@@ -170,7 +174,10 @@ export const CanvasElement = ({
           "hover:ring-1 hover:ring-offset-2 hover:ring-offset-slate-950 hover:ring-slate-700",
       )}
     >
-      <div className="w-full h-full overflow-hidden flex items-center justify-center relative rounded-[inherit]">
+      <div
+        style={{ cursor: "inherit" }}
+        className="w-full h-full overflow-hidden flex items-center justify-center relative rounded-[inherit]"
+      >
         {isTextType && renderTextContent()}
         {el.type === "image" && (
           <img
@@ -180,16 +187,22 @@ export const CanvasElement = ({
             style={{ borderRadius: el.style.borderRadius }}
           />
         )}
-        {el.type === "icon" && (() => {
-          const IconComponent = AVAILABLE_ICONS[el.content?.icon || "MousePointer2"] || AVAILABLE_ICONS["MousePointer2"];
-          const iconSize = typeof el.size.width === "number" ? el.size.width : parseInt(String(el.size.width)) || 32;
-          return (
-            <IconComponent
-              size={iconSize}
-              style={{ color: el.style.color }}
-            />
-          );
-        })()}
+        {el.type === "icon" &&
+          (() => {
+            const IconComponent =
+              AVAILABLE_ICONS[el.content?.icon || "MousePointer2"] ||
+              AVAILABLE_ICONS["MousePointer2"];
+            const iconSize =
+              typeof el.size.width === "number"
+                ? el.size.width
+                : parseInt(String(el.size.width)) || 32;
+            return (
+              <IconComponent
+                size={iconSize}
+                style={{ color: el.style.color }}
+              />
+            );
+          })()}
       </div>
 
       {isEditMode && isSelected && (

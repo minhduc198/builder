@@ -11,6 +11,8 @@ import {
   FONT_STYLES,
   TEXT_DECORATIONS,
   AVAILABLE_ICONS,
+  SELECT_CLASS,
+  SELECT_STYLE,
 } from "@/constants";
 
 interface PropertyPanelProps {
@@ -81,7 +83,8 @@ export const PropertyPanel = ({
                         : selectedElement.style,
                     });
                   }}
-                  className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-violet-500 transition-colors"
+                  className={SELECT_CLASS}
+                  style={SELECT_STYLE}
                 >
                   {HEADING_TAGS.map((tag) => (
                     <option key={tag.value} value={tag.value}>
@@ -102,7 +105,8 @@ export const PropertyPanel = ({
                   onChange={(e) =>
                     handleStyleChange("fontWeight", e.target.value)
                   }
-                  className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-violet-500 transition-colors"
+                  className={SELECT_CLASS}
+                  style={SELECT_STYLE}
                 >
                   {FONT_WEIGHTS.map((weight) => (
                     <option key={weight.value} value={weight.value}>
@@ -120,7 +124,8 @@ export const PropertyPanel = ({
                   onChange={(e) =>
                     handleStyleChange("fontFamily", e.target.value)
                   }
-                  className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-violet-500 transition-colors"
+                  className={SELECT_CLASS}
+                  style={SELECT_STYLE}
                 >
                   {FONT_FAMILIES.map((family) => (
                     <option key={family.value} value={family.value}>
@@ -141,7 +146,8 @@ export const PropertyPanel = ({
                   onChange={(e) =>
                     handleStyleChange("fontStyle", e.target.value)
                   }
-                  className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-violet-500 transition-colors"
+                  className={SELECT_CLASS}
+                  style={SELECT_STYLE}
                 >
                   {FONT_STYLES.map((style) => (
                     <option key={style.value} value={style.value}>
@@ -159,7 +165,8 @@ export const PropertyPanel = ({
                   onChange={(e) =>
                     handleStyleChange("textDecoration", e.target.value)
                   }
-                  className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-violet-500 transition-colors"
+                  className={SELECT_CLASS}
+                  style={SELECT_STYLE}
                 >
                   {TEXT_DECORATIONS.map((dec) => (
                     <option key={dec.value} value={dec.value}>
@@ -501,7 +508,8 @@ export const PropertyPanel = ({
                 onChange={(e) =>
                   handleStyleChange("borderStyle", e.target.value)
                 }
-                className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-violet-500 transition-colors"
+                className={SELECT_CLASS}
+                style={SELECT_STYLE}
               >
                 <option value="none">None</option>
                 <option value="solid">Solid</option>

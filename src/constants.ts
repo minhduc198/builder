@@ -11,7 +11,7 @@ import {
   X,
   ArrowRight,
   User,
-  Settings
+  Settings,
 } from "lucide-react";
 
 export const HEADING_TAGS = [
@@ -47,6 +47,16 @@ export const TEXT_DECORATIONS = [
   { value: "underline", label: "Underline" },
   { value: "line-through", label: "Strikethrough" },
 ];
+
+export const SELECT_CLASS =
+  "w-full appearance-none bg-slate-800 border border-slate-700 rounded-lg pl-3 pr-8 py-2 text-sm text-slate-200 focus:outline-none focus:border-violet-500 transition-colors";
+
+export const SELECT_STYLE = {
+  backgroundImage: `url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%2394a3b8' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3E%3C/svg%3E")`,
+  backgroundPosition: "right 8px center",
+  backgroundRepeat: "no-repeat",
+  backgroundSize: "1.25rem",
+};
 
 export const DEFAULT_SIZE: Record<
   ElementType,
@@ -110,5 +120,5 @@ export const AVAILABLE_ICONS: Record<string, any> = {
   X,
   ArrowRight,
   User,
-  Settings
+  Settings,
 };
